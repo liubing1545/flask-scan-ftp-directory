@@ -12,4 +12,6 @@ def traverse(f):
             traverse(tmp_path)
 
 path = 'E:\drive\G71-MAD1045'
-traverse(path)
+
+if __name__ == '__main__':
+    traverse(path)

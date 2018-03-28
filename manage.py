@@ -13,7 +13,7 @@ if os.path.exists('.env'):
         if len(var) == 2:
             os.environ[var[0]] = var[1]
 
-from app import create_app, db
+from app import create_app, db, scheduler
 from app.models import File
 from flask.ext.script import Manager, Shell
 from flask.ext.migrate import Migrate, MigrateCommand
@@ -60,19 +60,6 @@ def profile(length=25, profile_dir=None):
     app.run()
 
 
-# @manager.command
-# def deploy():
-#     """Run deployment tasks."""
-#     from flask.ext.migrate import upgrade
-#     from app.models import File
-#
-#     # migrate database to latest revision
-#     upgrade()
-#
-#     # create user roles
-#     File.insert_roles()
-
-
-
 if __name__ == '__main__':
+    scheduler.start()
     manager.run()
