@@ -7,4 +7,4 @@ Provide a restful interface to get ftp files list
 ## Note
 Celery 4.1.0    
 Windows 10 Enterprise 64 bit    
-celery -A <mymodule> worker -l info -P eventlet    
+celery -A *mymodule*.celery worker -l info -P eventlet    

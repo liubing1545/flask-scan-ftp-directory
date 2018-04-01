@@ -7,29 +7,29 @@ from sqlalchemy import and_
 from celery import Celery
 
 
-db = SQLAlchemy()
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'top-secret!'
 
-
-# Celery configuration
-app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
 # db configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@192.168.33.10:5432/ftp_files'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
+# Initialize db
+db = SQLAlchemy(app)
+
+# Celery configuration
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
 # Initialize Celery
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
+
 # ftp directory path
 path = 'D:\\recording'
-
 
 @celery.task
 def async_scan():
@@ -47,6 +47,12 @@ def look():
     # with db.app.app_context():
     #     print(User.query.all())
 
+# timer configuration
+app.config['SCHEDULER_API_ENABLED'] = True
+app.config['JOBS'] =  [{ 'id': 'job1', 'func': look, 'trigger': 'interval', 'seconds': 5 }]
+
+# Initialize timer
+#scheduler = APScheduler(app)
 
 def traverse(f):
     fs = os.listdir(f)
@@ -63,15 +69,7 @@ def split_path(str):
     if str.strip():
         items = str.split(os.path.sep)
         print(len(items))
-        if len(items) == 7:
-            # print(items[0])
-            # print(items[1])
-            # print(items[2])
-            # print(items[3])
-            # print(items[4])
-            # print(items[5])
-            # print(items[6])
-            
+        if len(items) == 7:            
 
             file = File()
             file.language = items[2]
@@ -82,7 +80,6 @@ def split_path(str):
             
             file.insert()
     
-
 
 class File(db.Model):
     __tablename__ = 'files'
@@ -137,35 +134,35 @@ def get_narrations():
     return jsonify({'narrations': [y for x in wordlist for y in x]})
 
 
-class Config(object):
-    JOBS = [
-        {
-            'id': 'job1',
-            'func': look,
-            'trigger': 'interval',
-            'seconds': 5
-        }
-    ]
+# class Config(object):
+#     JOBS = [
+#         {
+#             'id': 'job1',
+#             'func': look,
+#             'trigger': 'interval',
+#             'seconds': 5
+#         }
+#     ]
 
-    # SCHEDULER_JOBSTORES = {
-    #     'default': SQLAlchemyJobStore(url='sqlite:///flask_context.db')
-    # }
+#     # SCHEDULER_JOBSTORES = {
+#     #     'default': SQLAlchemyJobStore(url='sqlite:///flask_context.db')
+#     # }
 
-    SCHEDULER_API_ENABLED = True
+#     SCHEDULER_API_ENABLED = True
 
 
 if __name__ == '__main__':
     # app = Flask(__name__)
-    app.config.from_object(Config())
+    #app.config.from_object(Config())
 
-
-
-    # scheduler = APScheduler()
-    # scheduler.init_app(app)
-    # scheduler.start()
+    scheduler = APScheduler()
+    scheduler.init_app(app)
     
-    db.app = app
-    db.init_app(app) 
+    scheduler.start()
+    
+    # db = SQLAlchemy()
+    # db.app = app
+    # db.init_app(app) 
     # db.drop_all()
     # db.create_all()
     # traverse(path)
