@@ -1,0 +1,27 @@
+version: '3'
+services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+  db:
+    build: ./db
+    volumes:
+      - ./db/postgresql:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    environment:
+      - DB_USER=postgres
+      - DB_PASS=postgres
+      - DB_NAME=postgres
+
+  flask:
+    build: ./flask
+    ports:
+      - "30099:80"
+    depends_on:
+      - db
+      - redis
+    links:
+      - db:postgres
+      - redis
