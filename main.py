@@ -1,6 +1,6 @@
 import os
 #from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from flask_apscheduler import APScheduler
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
@@ -48,8 +48,8 @@ def look():
 
 # timer configuration
 app.config['SCHEDULER_API_ENABLED'] = True
-#app.config['JOBS'] =  [{ 'id': 'job1', 'func': look, 'trigger': 'interval', 'seconds': 10 }]
-app.config['JOBS'] =  [{ 'id': 'job1', 'func': look, 'trigger': 'cron', 'hour': 2 }]
+app.config['JOBS'] =  [{ 'id': 'job1', 'func': look, 'trigger': 'interval', 'minutes': 2 }]
+#app.config['JOBS'] =  [{ 'id': 'job1', 'func': look, 'trigger': 'cron', 'hour': 2 }]
 #app.config['SCHEDULER_JOBSTORES'] =  {'default': SQLAlchemyJobStore(url='sqlite:///flask_context.db')}
 
 scheduler = APScheduler()
@@ -115,6 +115,17 @@ class File(db.Model):
         return json_file
 
 
+@app.route('/api/delete/<filename>', methods=['DELETE'])
+#@app.route('/api/delete')
+def delete_word(filename):
+    item = db.session.query(File).filter(File.file_name == filename).first()    
+    if item is None:
+        abort(404)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({'deleted': filename})
+
+
 @app.route('/api/words', methods=['POST'])
 def get_words():
     language = request.form.get('language')
@@ -139,4 +150,5 @@ def get_narrations():
 
 
 if __name__ == '__main__':
+    #db.create_all()
     app.run()
