@@ -126,6 +126,34 @@ def delete_word(filename):
     return jsonify({'deleted': filename})
 
 
+@app.route('/api/delete', methods=['POST'])
+def delete():
+    file_name = request.form.get('file_name')  
+    if file_name is None:
+        abort(400)
+    item = db.session.query(File).filter(File.file_name == file_name).first()   
+    if item is None:
+        abort(404)
+    
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({'deleted': file_name})
+
+
+@app.route('/api/list', methods=['POST'])
+def get_list():
+    language = request.form.get('language')
+    phone_num = request.form.get('phone_num')
+    word_type=request.form.get('word_type')
+    word_num=request.form.get('word_num')
+    if language is None or phone_num is None or word_type is None or word_num is None:
+        abort(400)
+    
+    wordlist = db.session.query(File.file_name).filter(and_(File.language == language, File.phone_num == phone_num, File.word_type == word_type, File.word_num == word_num))
+
+    return jsonify({'words': [y for x in wordlist for y in x]})
+
+
 @app.route('/api/words', methods=['POST'])
 def get_words():
     language = request.form.get('language')
