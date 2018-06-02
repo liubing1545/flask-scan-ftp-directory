@@ -135,9 +135,16 @@ def delete():
     if item is None:
         abort(404)
     
-    db.session.delete(item)
-    db.session.commit()
-    return jsonify({'deleted': file_name})
+    array = item.split('-')
+    if len(array) != 6:
+        abort(500)
+
+    file_path = '%s/%s/%s/%s/%s/%s' % ('/home/ftper/ftp_root/resource', array[2], array[1], array[3], array[4], item)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify({'deleted': file_name})
 
 
 @app.route('/api/list', methods=['POST'])
