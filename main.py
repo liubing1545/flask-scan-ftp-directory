@@ -146,7 +146,7 @@ def delete():
 
     db.session.delete(item)
     db.session.commit()
-
+    
     #print(file_name)
     return jsonify({'deleted':file_name})
 
@@ -200,7 +200,7 @@ def get_words():
     if language is None or phone_num is None:
         abort(400)
     
-    wordlist = db.session.query(File.file_name).filter(and_(File.language == language, File.phone_num == phone_num, File.word_type == 'Word'))
+    wordlist = db.session.query(File.file_name).filter(and_(File.language == language, File.phone_num == phone_num, File.word_type == 'word'))
 
     return jsonify({'words': [y for x in wordlist for y in x]})
 
@@ -211,7 +211,7 @@ def get_narrations():
     phone_num = request.form.get('phone_num')
     if language is None or phone_num is None:
         abort(400)
-    narrationlist = db.session.query(File.file_name).filter(and_(File.language == language, File.phone_num == phone_num, File.word_type == 'Narration'))
+    narrationlist = db.session.query(File.file_name).filter(and_(File.language == language, File.phone_num == phone_num, File.word_type == 'narration'))
 
     return jsonify({'narrations': [y for x in narrationlist for y in x]})
 
