@@ -125,26 +125,58 @@ def delete_word(filename):
     db.session.commit()
     return jsonify({'deleted': filename})
 
-
 @app.route('/api/delete', methods=['POST'])
 def delete():
-    file_name = request.form.get('file_name')  
+    file_name = request.form.get('file_name')
     if file_name is None:
         abort(400)
-    item = db.session.query(File).filter(File.file_name == file_name).first()   
+    item = db.session.query(File).filter(File.file_name == file_name).first()
     if item is None:
         abort(404)
-    
-    array = item.split('-')
-    if len(array) != 6:
-        abort(500)
 
-    file_path = '%s/%s/%s/%s/%s/%s' % ('/home/ftper/ftp_root/resource', array[2], array[1], array[3], array[4], item)
+    array = file_name.split('-')
+    if len(array) != 6:
+        abort(401)
+
+    #file_path = '%s/%s' % ('/home/ftper/flask-scan-ftp', file_name)
+    file_path = '%s/%s/%s/%s/%s/%s' % (path, array[2], array[1], array[3], array[4], file_name)
+    #print(file_path)
     if os.path.exists(file_path):
         os.remove(file_path)
-        db.session.delete(item)
-        db.session.commit()
-        return jsonify({'deleted': file_name})
+
+    db.session.delete(item)
+    db.session.commit()
+
+    #print(file_name)
+    return jsonify({'deleted':file_name})
+
+
+#@app.route('/api/delete1', methods=['POST'])
+#def delete():
+#    file_name = request.form.get('file_name')  
+    #if file_name is None:
+    #    abort(400)
+    #item = db.session.query(File).filter(File.file_name == file_name).first()   
+    #if item is None:
+    #    abort(404)
+
+    #array = item.split('-')
+    #if len(array) != 6:
+    #    abort(401)
+
+    #file_path = '%s/%s/%s/%s/%s/%s' % ('/home/ftper/flask-scan-ftp', array[2], array[1], array[3], array[4], item)
+    #if os.path.exists(file_path):
+    #    try:
+    #        pass
+           # os.remove(file_path)
+    #    except Exception as e:
+    #        abort(403)
+
+    #    db.session.delete(item)
+    #    db.session.commit()
+    #    return jsonify({'deleted': item}) 
+    #return jsonity({'file not exist': file_name})  
+#    return jsonity({'result':'ok'}) 
 
 
 @app.route('/api/list', methods=['POST'])
@@ -186,4 +218,4 @@ def get_narrations():
 
 if __name__ == '__main__':
     #db.create_all()
-    app.run()
+    app.run(host='0.0.0.0',port=8000)
